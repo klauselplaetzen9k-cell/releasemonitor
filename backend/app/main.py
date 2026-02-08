@@ -5,6 +5,8 @@ from app.api import auth_router, projects_router, releases_router, subscriptions
 from app.api.admin import router as admin_router
 from app.api.webhooks import router as webhooks_router
 from app.api.feeds import router as feeds_router
+from app.api.categories import router as categories_router
+from app.api.teams import router as teams_router
 from app.core.database import engine, Base
 
 settings = get_settings()
@@ -37,6 +39,8 @@ app.include_router(subscriptions_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(webhooks_router, prefix="/api")
 app.include_router(feeds_router, prefix="/api")
+app.include_router(categories_router, prefix="/api")
+app.include_router(teams_router, prefix="/api")
 
 
 @app.get("/health")
