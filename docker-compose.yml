@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:11.4-alpine
+    container_name: releasemonitor-db
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-changeme}
+      MARIADB_DATABASE: releasemonitor
+      MARIADB_USER: releasemonitor
+      MARIADB_PASSWORD: ${DB_PASSWORD:-password}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - releasemonitor-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: releasemonitor-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - releasemonitor-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: releasemonitor-backend
+    environment:
+      DATABASE_URL: mariadb+pymysql://releasemonitor:${DB_PASSWORD:-password}@mariadb:3306/releasemonitor?charset=utf8mb4
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      SMTP_HOST: ${SMTP_HOST:-smtp.example.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-""}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-""}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-""}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:80}
+      CORS_ORIGINS: http://localhost:80,http://localhost:5173
+    ports:
+      - "8000:8000"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - releasemonitor-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: releasemonitor-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - releasemonitor-network
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  releasemonitor-network:
+    driver: bridge

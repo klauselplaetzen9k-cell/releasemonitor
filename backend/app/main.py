@@ -1,0 +1,47 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import get_settings
+from app.api import auth_router, projects_router, releases_router, subscriptions_router
+from app.core.database import engine, Base
+
+settings = get_settings()
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="Release Monitor API",
+    description="Track releases from GitHub, GitLab, npm, PyPI, Docker Hub, and more",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(auth_router, prefix="/api")
+app.include_router(projects_router, prefix="/api")
+app.include_router(releases_router, prefix="/api")
+app.include_router(subscriptions_router, prefix="/api")
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
+@app.get("/")
+def root():
+    return {
+        "name": "Release Monitor API",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
