@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth, useTheme } from '../hooks/useAuth'
+import { ThemeToggle } from '../hooks/useTheme'
 
 export default function SettingsPage() {
   const { user, logout } = useAuth()
+  const { theme } = useTheme()
   const [formData, setFormData] = useState({
     firstName: user?.first_name || '',
     lastName: user?.last_name || '',
@@ -24,9 +26,12 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Settings</h1>
-        <p className="page-subtitle">Manage your account settings</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 className="page-title">Settings</h1>
+          <p className="page-subtitle">Manage your account and preferences</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="card">
@@ -79,18 +84,32 @@ export default function SettingsPage() {
       </div>
 
       <div className="card">
+        <h2 className="card-title" style={{ marginBottom: '1.5rem' }}>Appearance</h2>
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontWeight: 500 }}>Dark Mode</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              Toggle between light and dark theme
+            </p>
+          </div>
+          <ThemeToggle />
+        </div>
+      </div>
+
+      <div className="card">
         <h2 className="card-title" style={{ marginBottom: '1.5rem' }}>Notifications</h2>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
             <input type="checkbox" defaultChecked />
             <span>Email notifications for new releases</span>
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
             <input type="checkbox" />
             <span>Email notifications for pre-releases</span>
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
             <input type="checkbox" defaultChecked />
             <span>Weekly digest email</span>
           </label>
