@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.api import auth_router, projects_router, releases_router, subscriptions_router
 from app.api.admin import router as admin_router
+from app.api.webhooks import router as webhooks_router
+from app.api.feeds import router as feeds_router
 from app.core.database import engine, Base
 
 settings = get_settings()
@@ -33,6 +35,8 @@ app.include_router(projects_router, prefix="/api")
 app.include_router(releases_router, prefix="/api")
 app.include_router(subscriptions_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(webhooks_router, prefix="/api")
+app.include_router(feeds_router, prefix="/api")
 
 
 @app.get("/health")
