@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { useAuth, useTheme } from '../hooks/useAuth'
+import { useAuth } from '../hooks/useAuth'
 import { ThemeToggle } from '../hooks/useTheme'
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth()
-  const { theme } = useTheme()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     firstName: user?.first_name || '',
     lastName: user?.last_name || '',
