@@ -25,42 +25,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            network=host
+      - name: Check if deployment is configured
+        id: check-config
+        run: |
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "Skipping deployment - SSH_HOST not configured"
+            echo "configured=false" >> $GITHUB_OUTPUT
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
         
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
+      - name: Deploy via SSH (if configured)
+        if: steps.check-config.outputs.configured == 'true'
+        uses: appleboy/ssh-action@v0.1.10
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Configure Docker
-        run: |
-          mkdir -p ~/.docker
-          echo '{"credsStore": "pass"}' > ~/.docker/config.json
-          
-      - name: Pull images
-        run: |
-          docker pull ghcr.io/${{ github.repository }}-backend:latest || true
-          docker pull ghcr.io/${{ github.repository }}-frontend:latest || true
-          
-      - name: Deploy with Docker Compose
-        run: |
-          cp .env.example .env
-          sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD_STAGING }}|g' .env
-          sed -i 's|SECRET_KEY=.*|SECRET_KEY=${{ secrets.SECRET_KEY_STAGING }}|g' .env
-          docker-compose pull
-          docker-compose up -d --build
-        working-directory: .
-        
-      - name: Health Check
-        run: |
-          sleep 30
-          curl -f http://localhost/health || exit 1
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ${{ secrets.SSH_PATH || '/opt/releasemonitor' }}
+            git pull
+            cp .env.example .env 2>/dev/null || true
+            sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD_STAGING }}|g' .env 2>/dev/null || true
+            sed -i 's|SECRET_KEY=.*|SECICT_KEY=${{ secrets.SECRET_KEY_STAGING }}|g' .env 2>/dev/null || true
+            docker-compose pull
+            docker-compose up -d --build || docker-compose up -d
 
   deploy-production:
     if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
@@ -70,51 +59,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            network=host
+      - name: Check if deployment is configured
+        id: check-config
+        run: |
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "Skipping deployment - SSH_HOST not configured"
+            echo "configured=false" >> $GITHUB_OUTPUT
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
         
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
+      - name: Deploy via SSH (if configured)
+        if: steps.check-config.outputs.configured == 'true'
+        uses: appleboy/ssh-action@v0.1.10
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Configure Docker
-        run: |
-          mkdir -p ~/.docker
-          echo '{"credsStore": "pass"}' > ~/.docker/config.json
-          
-      - name: Pull latest images
-        run: |
-          docker pull ghcr.io/${{ github.repository }}-backend:latest || true
-          docker pull ghcr.io/${{ github.repository }}-frontend:latest || true
-          
-      - name: Deploy to Production
-        run: |
-          cp .env.example .env.production
-          sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD_PROD }}|g' .env.production
-          sed -i 's|SECRET_KEY=.*|SECRET_KEY=${{ secrets.SECRET_KEY_PROD }}|g' .env.production
-          mv .env.production .env
-          docker-compose -f docker-compose.prod.yml pull
-          docker-compose -f docker-compose.prod.yml up -d --build
-        working-directory: .
-        
-      - name: Health Check
-        run: |
-          sleep 60
-          curl -f http://localhost/health || exit 1
-          
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ${{ secrets.SSH_PATH || '/opt/releasemonitor' }}
+            git pull
+            git checkout v${{ github.ref_name }}
+            cp .env.example .env.production 2>/dev/null || true
+            sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD_PROD }}|g' .env.production 2>/dev/null || true
+            sed -i 's|SECRET_KEY=.*|SECRET_KEY=${{ secrets.SECRET_KEY_PROD }}|g' .env.production 2>/dev/null || true
+            mv .env.production .env
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d --build || docker-compose -f docker-compose.prod.yml up -d
