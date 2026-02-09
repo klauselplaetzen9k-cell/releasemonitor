@@ -46,7 +46,7 @@ app.include_router(teams_router, prefix="/api")
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup."""
-    from app.services.email import init_email_service
+    from app.services.email import init_email_service, email_service
     init_email_service()
     print(f"[Startup] Email service: {'Enabled' if email_service.is_configured() else 'Disabled (no SMTP config)'}")
 
