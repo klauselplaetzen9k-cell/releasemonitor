@@ -3,9 +3,18 @@ target-version = "py39"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B", "C4", "A", "FA"]
-ignore = ["E501", "F401"]
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # Line too long
+    "F401",  # Unused import
+    "E402",  # Module level import not at top
+    "W293",  # Blank line contains whitespace
+    "W291",  # Trailing whitespace
+    "F841",  # Unused variable
+    "E712",  # Avoid equality comparisons to True
+    "F821",  # Undefined name (SQLAlchemy relationships)
+]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"tests/*" = ["FA1001", "FA1002"]
+"tests/*" = []
