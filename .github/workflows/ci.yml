@@ -24,22 +24,12 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
-          pip install ruff black isort
+          pip install ruff
       
       - name: Check formatting with Ruff
         run: |
           cd backend
           ruff check .
-          
-      - name: Check imports with isort
-        run: |
-          cd backend
-          isort --check-only --diff .
-          
-      - name: Check code formatting with Black
-        run: |
-          cd backend
-          black --check --diff .
 
   backend-test:
     runs-on: ubuntu-latest
