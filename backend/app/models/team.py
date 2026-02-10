@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 import datetime
 
@@ -59,11 +60,3 @@ class TeamProject(Base):
     __table_args__ = (
         {"sqlite_autoincrement": True},
     )
-
-
-# Add reverse relationships
-from app.models.user import User
-User.team_members = relationship("TeamMember", back_populates="user")
-
-from app.models.project import Project
-Project.team_projects = relationship("TeamProject", back_populates="project")

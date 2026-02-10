@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 import datetime
 
@@ -34,12 +35,3 @@ class WebhookSubscription(Base):
     # Relationships
     project = relationship("Project", back_populates="webhook_subscriptions")
     user = relationship("User", back_populates="webhook_subscriptions")
-
-
-# Add relationship to User
-from app.models.user import User
-User.webhook_subscriptions = relationship("WebhookSubscription", back_populates="user")
-
-# Add relationship to Project
-from app.models.project import Project
-Project.webhook_subscriptions = relationship("WebhookSubscription", back_populates="project")

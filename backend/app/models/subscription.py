@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 import datetime
 
@@ -17,12 +18,3 @@ class Subscription(Base):
     # Relationships
     user = relationship("User", back_populates="subscriptions")
     project = relationship("Project", back_populates="subscriptions")
-
-
-# Add relationship to User
-from app.models.user import User
-User.subscriptions = relationship("Subscription", back_populates="user")
-
-# Add relationship to Project
-from app.models.project import Project
-Project.subscriptions = relationship("Subscription", back_populates="project")

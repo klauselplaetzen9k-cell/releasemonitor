@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 import datetime
 
@@ -33,9 +34,3 @@ class ProjectCategory(Base):
     
     project = relationship("Project", back_populates="project_categories")
     category = relationship("Category", back_populates="projects")
-
-
-# Add relationship to Project
-from app.models.project import Project
-Project.categories = relationship("ProjectCategory", back_populates="project")
-Project.project_categories = relationship("ProjectCategory", back_populates="project")

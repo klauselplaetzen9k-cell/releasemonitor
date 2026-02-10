@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 import datetime
 
@@ -35,8 +36,3 @@ class ReleaseAsset(Base):
     
     # Relationship
     release = relationship("Release", back_populates="assets")
-
-
-# Add relationship to Project
-from app.models.project import Project
-Project.releases = relationship("Release", order_by=Release.created_at.desc(), back_populates="project")

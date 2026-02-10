@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 import datetime
 
@@ -33,11 +34,6 @@ class Dependency(Base):
     __table_args__ = (
         {"sqlite_autoincrement": True},
     )
-
-
-# Add relationship to Project
-from app.models.project import Project
-Project.dependencies = relationship("Dependency", back_populates="project")
 
 
 class SecurityAdvisory(Base):
