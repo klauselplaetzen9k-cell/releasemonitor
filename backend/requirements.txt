@@ -16,6 +16,7 @@ python-multipart>=0.0.6
 # Settings
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
+email-validator>=2.0.0
 
 # HTTP Client
 httpx>=0.26.0
