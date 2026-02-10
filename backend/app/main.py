@@ -7,12 +7,9 @@ from app.api.webhooks import router as webhooks_router
 from app.api.feeds import router as feeds_router
 from app.api.categories import router as categories_router
 from app.api.teams import router as teams_router
-from app.core.database import engine, Base
+from app.core.database import engine
 
 settings = get_settings()
-
-# Create tables
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Release Monitor API",
@@ -46,6 +43,10 @@ app.include_router(teams_router, prefix="/api")
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup."""
+    from app.core.database import Base
+    # Create database tables
+    Base.metadata.create_all(bind=engine)
+    
     from app.services.email import init_email_service, email_service
     init_email_service()
     print(f"[Startup] Email service: {'Enabled' if email_service.is_configured() else 'Disabled (no SMTP config)'}")
